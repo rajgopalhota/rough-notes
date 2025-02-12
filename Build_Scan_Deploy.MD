@@ -1,4 +1,4 @@
-# **Big Picture: `jules.yml`, `Jenkinsfile`, and `manifest.yml` (Build, Scan, Deploy)**  
+## **Big Picture: jules.yml, Jenkinsfile, and manifest.yml (Build, Scan, Deploy)**  
 
 ### **Overview**
 In a **CI/CD pipeline**, different configuration files define various stages like **build, scan, and deploy**.  
