@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup, Row, Col, FormGroup, Input, Label } from "reactstrap";
-import { getRewards } from "./api"; // Assume this fetches rewards
-import "moneta-bootstrap/dist/css/moneta-bootstrap.min.css"; // Ensure Moneta styles are applied
+import "moneta-bootstrap/dist/css/moneta-bootstrap.min.css"; // Moneta styles
 
-const RewardFilters = () => {
+const RewardFilters = ({ getRewards }) => {
   const [items, setItems] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [showAll, setShowAll] = useState(false);
@@ -27,9 +26,7 @@ const RewardFilters = () => {
     return finalArray;
   };
 
-  const applyFilters = (items) => {
-    return items.filter(item => filters.includes(item.status));
-  };
+  const applyFilters = (items) => items.filter((item) => filters.includes(item.status));
 
   const displayedItems = showAll ? applyFilters(allItems) : applyFilters(items);
 
@@ -45,34 +42,40 @@ const RewardFilters = () => {
     <div className="container mt-4">
       {/* Toggle Between Random 6 & All */}
       <Row className="mb-3">
-        <Col>
+        <Col className="d-flex justify-content-center">
           <ButtonGroup>
-            <Button color={showAll ? "primary" : "outline-primary"} onClick={toggleShowAll}>
-              Show All
-            </Button>
-            <Button color={!showAll ? "primary" : "outline-primary"} onClick={toggleShowAll}>
+            <Button
+              color={showAll ? "outline-primary" : "primary"}
+              className={`px-4 ${!showAll && "fw-bold"}`}
+              onClick={() => setShowAll(false)}
+            >
               Show Random 6
+            </Button>
+            <Button
+              color={!showAll ? "outline-primary" : "primary"}
+              className={`px-4 ${showAll && "fw-bold"}`}
+              onClick={() => setShowAll(true)}
+            >
+              Show All
             </Button>
           </ButtonGroup>
         </Col>
       </Row>
 
-      {/* Filter Toggles */}
-      <Row>
-        <Col>
-          <FormGroup className="d-flex justify-content-center">
-            {["active", "inactive", "sale"].map((filter) => (
-              <div key={filter} className="mx-3">
-                <Label className="form-check-label">{filter.charAt(0).toUpperCase() + filter.slice(1)}</Label>
-                <Input
-                  type="switch"
-                  checked={filters.includes(filter)}
-                  onChange={() => handleFilterToggle(filter)}
-                  className="form-check-input"
-                />
-              </div>
-            ))}
-          </FormGroup>
+      {/* Filter Toggle Switches */}
+      <Row className="mb-3">
+        <Col className="d-flex justify-content-center gap-4">
+          {["active", "inactive", "sale"].map((filter) => (
+            <FormGroup key={filter} switch className="d-flex align-items-center gap-2">
+              <Label className="form-switch-label">{filter.charAt(0).toUpperCase() + filter.slice(1)}</Label>
+              <Input
+                type="switch"
+                checked={filters.includes(filter)}
+                onChange={() => handleFilterToggle(filter)}
+                className="form-switch"
+              />
+            </FormGroup>
+          ))}
         </Col>
       </Row>
 
@@ -81,7 +84,7 @@ const RewardFilters = () => {
         {displayedItems.length ? (
           displayedItems.map((item) => (
             <Col key={item.id} md={4} className="mb-3">
-              <div className="card p-3 shadow-sm">
+              <div className="card p-3 shadow-sm border">
                 <h5>{item.name}</h5>
                 <p className="text-muted">{item.status}</p>
               </div>
