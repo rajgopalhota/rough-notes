@@ -45,3 +45,27 @@ const MyTable = () => {
 };
 
 export default MyTable;
+
+
+
+.custom-ag-grid .ag-header {
+  background-color: #002147 !important; /* Official Dark Blue */
+  color: white !important;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.custom-ag-grid .ag-header-cell {
+  border-bottom: 2px solid #ffffff !important;
+}
+
+.custom-ag-grid .ag-cell {
+  font-size: 15px;
+  text-align: center;
+  padding: 10px;
+}
+
+.custom-ag-grid .ag-row:hover {
+  background-color: #f5f5f5 !important;
+}
