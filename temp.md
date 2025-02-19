@@ -1,3 +1,10 @@
+Yes, AG Grid provides built-in properties for padding, spacing, and styling without needing custom CSS. You can achieve a clean, neat, and professional look using headerHeight, rowHeight, defaultColDef, and gridOptions.
+
+
+---
+
+Optimized Code Using AG Grid Built-in Features
+
 import React, { useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
@@ -26,18 +33,21 @@ const MyTable = () => {
 
   return (
     <div
-      className="ag-theme-alpine custom-ag-grid"
-      style={{ width: "80%", margin: "auto", height: "auto", minHeight: "400px" }}
+      className="ag-theme-alpine"
+      style={{ width: "80%", margin: "auto", height: "auto", minHeight: "450px" }}
     >
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
         domLayout="autoHeight"
-        rowHeight={45} // Adjusts row height for better spacing
+        headerHeight={50} // Controls header height
+        rowHeight={50} // Controls row height
         defaultColDef={{
           resizable: true,
           sortable: true,
           filter: true,
+          cellStyle: { padding: "10px", textAlign: "center" }, // Adds spacing & centers text
+          headerClass: "custom-header", // Applies AG Grid class
         }}
       />
     </div>
@@ -47,25 +57,14 @@ const MyTable = () => {
 export default MyTable;
 
 
+---
 
-.custom-ag-grid .ag-header {
-  background-color: #002147 !important; /* Official Dark Blue */
-  color: white !important;
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
-}
+Using AG Grid’s Built-in Styling for Header (No Custom CSS)
 
-.custom-ag-grid .ag-header-cell {
-  border-bottom: 2px solid #ffffff !important;
-}
+Instead of manual CSS, AG Grid’s headerHeight and defaultColDef.headerClass handle styling.
 
-.custom-ag-grid .ag-cell {
-  font-size: 15px;
-  text-align: center;
-  padding: 10px;
-}
+✅ headerHeight: 50 → Controls header row height.
+✅ rowHeight: 50 → Adds proper row spacing.
+✅ cellStyle.padding: "10px" → Ensures neat spacing inside cells.
+✅
 
-.custom-ag-grid .ag-row:hover {
-  background-color: #f5f5f5 !important;
-}
