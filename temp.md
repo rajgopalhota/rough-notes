@@ -68,9 +68,3 @@ return ( <div> <h2>Vendor Fulfillment Overview</h2> <div style={{ display: "flex
 
 export default VendorFulfillmentOverview;
 
-
-
-
-
-
-npm install react-chartjs-2 chart.js
