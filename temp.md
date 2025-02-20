@@ -1,70 +1,76 @@
-Yes, AG Grid provides built-in properties for padding, spacing, and styling without needing custom CSS. You can achieve a clean, neat, and professional look using headerHeight, rowHeight, defaultColDef, and gridOptions.
+import React, { useEffect, useState } from "react"; import { Bar, Line, Pie } from "react-chartjs-2"; import { Chart, registerables } from "chart.js";
+
+Chart.register(...registerables);
+
+const VendorFulfillmentOverview = ({ data }) => { const [topItems, setTopItems] = useState({}); const [fulfillmentsOverTime, setFulfillmentsOverTime] = useState({}); const [topCustomers, setTopCustomers] = useState({}); const [fulfillmentsPerVendor, setFulfillmentsPerVendor] = useState({});
+
+useEffect(() => { if (!data || data.length === 0) return;
+
+const filteredData = data.filter(item => item.fulfillmentStaus === "Success");
+
+// Top 10 Fulfilled Items
+const itemsMap = {};
+filteredData.forEach(({ rewardCatalogItemName, fulfillmentQuantity }) => {
+  itemsMap[rewardCatalogItemName] = (itemsMap[rewardCatalogItemName] || 0) + fulfillmentQuantity;
+});
+const topItemsData = Object.entries(itemsMap)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10);
+setTopItems({
+  labels: topItemsData.map(item => item[0]),
+  datasets: [{ label: "Fulfilled Quantity", data: topItemsData.map(item => item[1]), backgroundColor: "blue" }]
+});
+
+// Fulfillments Over Time (by Month)
+const monthlyMap = {};
+filteredData.forEach(({ fulfilmentCreationDate }) => {
+  const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
+  monthlyMap[month] = (monthlyMap[month] || 0) + 1;
+});
+setFulfillmentsOverTime({
+  labels: Object.keys(monthlyMap),
+  datasets: [{ label: "Fulfillments per Month", data: Object.values(monthlyMap), borderColor: "green", fill: false }]
+});
+
+// Top 10 Customers
+const customerMap = {};
+filteredData.forEach(({ customerName, fulfillmentQuantity }) => {
+  customerMap[customerName] = (customerMap[customerName] || 0) + fulfillmentQuantity;
+});
+const topCustomersData = Object.entries(customerMap)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10);
+setTopCustomers({
+  labels: topCustomersData.map(item => item[0]),
+  datasets: [{ label: "Total Fulfillments", data: topCustomersData.map(item => item[1]), backgroundColor: "red" }]
+});
+
+// Fulfillments Per Vendor Over Time
+const vendorMap = {};
+filteredData.forEach(({ rewardCatalogItemName, fulfilmentCreationDate }) => {
+  const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
+  if (!vendorMap[rewardCatalogItemName]) vendorMap[rewardCatalogItemName] = {};
+  vendorMap[rewardCatalogItemName][month] = (vendorMap[rewardCatalogItemName][month] || 0) + 1;
+});
+setFulfillmentsPerVendor({
+  labels: Object.keys(monthlyMap),
+  datasets: Object.entries(vendorMap).map(([vendor, values]) => ({
+    label: vendor,
+    data: Object.keys(monthlyMap).map(month => values[month] || 0),
+    borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+    fill: false
+  }))
+});
+
+}, [data]);
+
+return ( <div> <h2>Vendor Fulfillment Overview</h2> <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}> <div style={{ width: "45%" }}><Bar data={topItems} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsOverTime} /></div> <div style={{ width: "45%" }}><Pie data={topCustomers} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsPerVendor} /></div> </div> </div> ); };
+
+export default VendorFulfillmentOverview;
 
 
----
-
-Optimized Code Using AG Grid Built-in Features
-
-import React, { useState } from "react";
-import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
-
-const MyTable = () => {
-  const [rowData] = useState([
-    { id: 1, name: "Alice Johnson", age: 25, city: "New York" },
-    { id: 2, name: "Bob Williams", age: 30, city: "London" },
-    { id: 3, name: "Charlie Brown", age: 28, city: "Paris" },
-    { id: 4, name: "David Smith", age: 35, city: "Berlin" },
-    { id: 5, name: "Emma Davis", age: 27, city: "Toronto" },
-    { id: 6, name: "Frank Thomas", age: 32, city: "San Francisco" },
-    { id: 7, name: "Grace White", age: 29, city: "Sydney" },
-    { id: 8, name: "Hannah Lee", age: 26, city: "Singapore" },
-    { id: 9, name: "Ian Clark", age: 31, city: "Dubai" },
-    { id: 10, name: "Jane Wilson", age: 33, city: "Amsterdam" },
-  ]);
-
-  const [columnDefs] = useState([
-    { field: "id", headerName: "ID", flex: 1 },
-    { field: "name", headerName: "Name", flex: 2 },
-    { field: "age", headerName: "Age", flex: 1 },
-    { field: "city", headerName: "City", flex: 2 },
-  ]);
-
-  return (
-    <div
-      className="ag-theme-alpine"
-      style={{ width: "80%", margin: "auto", height: "auto", minHeight: "450px" }}
-    >
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={columnDefs}
-        domLayout="autoHeight"
-        headerHeight={50} // Controls header height
-        rowHeight={50} // Controls row height
-        defaultColDef={{
-          resizable: true,
-          sortable: true,
-          filter: true,
-          cellStyle: { padding: "10px", textAlign: "center" }, // Adds spacing & centers text
-          headerClass: "custom-header", // Applies AG Grid class
-        }}
-      />
-    </div>
-  );
-};
-
-export default MyTable;
 
 
----
 
-Using AG Grid’s Built-in Styling for Header (No Custom CSS)
 
-Instead of manual CSS, AG Grid’s headerHeight and defaultColDef.headerClass handle styling.
-
-✅ headerHeight: 50 → Controls header row height.
-✅ rowHeight: 50 → Adds proper row spacing.
-✅ cellStyle.padding: "10px" → Ensures neat spacing inside cells.
-✅
-
+npm install react-chartjs-2 chart.js
