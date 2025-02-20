@@ -1,70 +1,58 @@
-import React, { useEffect, useState } from "react"; import { Bar, Line, Pie } from "react-chartjs-2"; import { Chart, registerables } from "chart.js";
+import React, { useState, useEffect } from "react";
+import { getRewards } from "./api"; // Import the API function
 
-Chart.register(...registerables);
+const RewardsSelection = ({ categoryId }) => {
+  const [rewards, setRewards] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-const VendorFulfillmentOverview = () => { const [data, setData] = useState([]); const [topItems, setTopItems] = useState({}); const [fulfillmentsOverTime, setFulfillmentsOverTime] = useState({}); const [topCustomers, setTopCustomers] = useState({}); const [fulfillmentsPerVendor, setFulfillmentsPerVendor] = useState({});
+  // Fetch rewards only if categoryId is 2
+  const fetchRewards = async () => {
+    if (categoryId !== 2 || !startDate || !endDate) return; // Exit if category is not 2 or dates are empty
+    try {
+      const response = await getRewards({ categoryId, startDate, endDate });
+      setRewards(response.data);
+    } catch (error) {
+      console.error("Error fetching rewards:", error);
+    }
+  };
 
-useEffect(() => { const fetchData = async () => { try { const response = await getAllFulfillments(); console.log(response); setData(response || []); } catch (error) { console.error("Error fetching data:", error); setData([]); } }; fetchData(); }, []);
+  useEffect(() => {
+    fetchRewards();
+  }, [categoryId, startDate, endDate]); // Fetch rewards when category and dates change
 
-useEffect(() => { if (!data || data.length === 0) return;
+  return (
+    <div>
+      <h2>Travel Rewards</h2>
 
-const filteredData = data.filter(item => item.fulfillmentStaus === "Success");
+      {categoryId === 2 && (
+        <div>
+          {/* Date Filters */}
+          <label>Start Date:</label>
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
 
-const itemsMap = {};
-filteredData.forEach(({ rewardCatalogItemName, fulfillmentQuantity }) => {
-  itemsMap[rewardCatalogItemName] = (itemsMap[rewardCatalogItemName] || 0) + fulfillmentQuantity;
-});
-const topItemsData = Object.entries(itemsMap)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 10);
-setTopItems({
-  labels: topItemsData.map(item => item[0]),
-  datasets: [{ label: "Fulfilled Quantity", data: topItemsData.map(item => item[1]), backgroundColor: "blue" }]
-});
+          <label>End Date:</label>
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
 
-const monthlyMap = {};
-filteredData.forEach(({ fulfilmentCreationDate }) => {
-  const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
-  monthlyMap[month] = (monthlyMap[month] || 0) + 1;
-});
-setFulfillmentsOverTime({
-  labels: Object.keys(monthlyMap),
-  datasets: [{ label: "Fulfillments per Month", data: Object.values(monthlyMap), borderColor: "green", fill: false }]
-});
+          <button onClick={fetchRewards}>Apply Filters</button>
 
-const customerMap = {};
-filteredData.forEach(({ customerName, fulfillmentQuantity }) => {
-  customerMap[customerName] = (customerMap[customerName] || 0) + fulfillmentQuantity;
-});
-const topCustomersData = Object.entries(customerMap)
-  .sort((a, b) => b[1] - a[1])
-  .slice(0, 10);
-setTopCustomers({
-  labels: topCustomersData.map(item => item[0]),
-  datasets: [{ label: "Total Fulfillments", data: topCustomersData.map(item => item[1]), backgroundColor: "red" }]
-});
+          {/* Rewards List */}
+          <div>
+            {rewards.length > 0 ? (
+              rewards.map((reward) => (
+                <div key={reward.id}>
+                  <h3>{reward.name}</h3>
+                  <p>{reward.description}</p>
+                </div>
+              ))
+            ) : (
+              <p>No rewards found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
-const vendorMap = {};
-filteredData.forEach(({ rewardCatalogItemName, fulfilmentCreationDate }) => {
-  const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
-  if (!vendorMap[rewardCatalogItemName]) vendorMap[rewardCatalogItemName] = {};
-  vendorMap[rewardCatalogItemName][month] = (vendorMap[rewardCatalogItemName][month] || 0) + 1;
-});
-setFulfillmentsPerVendor({
-  labels: Object.keys(monthlyMap),
-  datasets: Object.entries(vendorMap).map(([vendor, values]) => ({
-    label: vendor,
-    data: Object.keys(monthlyMap).map(month => values[month] || 0),
-    borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-    fill: false
-  }))
-});
-
-}, [data]);
-
-if (!data || data.length === 0) { return <p>Loading or no data available...</p>; }
-
-return ( <div> <h2>Vendor Fulfillment Overview</h2> <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}> <div style={{ width: "45%" }}><Bar data={topItems} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsOverTime} /></div> <div style={{ width: "45%" }}><Pie data={topCustomers} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsPerVendor} /></div> </div> </div> ); };
-
-export default VendorFulfillmentOverview;
-
+export default RewardsSelection;
