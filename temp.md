@@ -1,41 +1,179 @@
-INSERT INTO fulfillment (id, customer_id, reward_catalog_item_id, qty, status, creation_date) VALUES
-(11, 1, 5, 10, 'Success', '2023-03-15 10:30:00'),
-(12, 2, 12, 7, 'Success', '2024-07-21 12:45:00'),
-(13, 3, 8, 15, 'Success', '2025-01-05 08:15:00'),
-(14, 1, 20, 6, 'Success', '2022-09-10 14:30:00'),
-(15, 2, 25, 12, 'Success', '2023-05-18 18:10:00'),
-(16, 3, 30, 9, 'Success', '2024-11-23 16:45:00'),
-(17, 1, 10, 5, 'Success', '2025-02-01 11:20:00'),
-(18, 2, 15, 8, 'Success', '2023-07-14 13:35:00'),
-(19, 3, 35, 14, 'Success', '2024-04-27 09:50:00'),
-(20, 1, 40, 11, 'Success', '2025-06-10 07:15:00'),
-(21, 2, 3, 13, 'Success', '2023-02-19 15:25:00'),
-(22, 3, 6, 7, 'Success', '2022-12-28 20:40:00'),
-(23, 1, 18, 16, 'Success', '2024-08-09 06:55:00'),
-(24, 2, 22, 9, 'Success', '2025-05-17 14:20:00'),
-(25, 3, 28, 10, 'Success', '2023-06-30 10:10:00'),
-(26, 1, 32, 5, 'Success', '2024-09-25 19:45:00'),
-(27, 2, 36, 8, 'Success', '2025-03-12 08:30:00'),
-(28, 3, 7, 14, 'Success', '2023-04-22 12:55:00'),
-(29, 1, 14, 6, 'Success', '2022-10-11 17:40:00'),
-(30, 2, 21, 12, 'Success', '2024-01-08 11:15:00'),
-(31, 3, 9, 7, 'Success', '2025-07-04 13:25:00'),
-(32, 1, 26, 10, 'Success', '2023-05-19 15:40:00'),
-(33, 2, 34, 9, 'Success', '2024-11-30 09:20:00'),
-(34, 3, 11, 15, 'Success', '2025-02-05 07:10:00'),
-(35, 1, 16, 13, 'Success', '2022-08-21 18:30:00'),
-(36, 2, 27, 5, 'Success', '2023-09-13 12:45:00'),
-(37, 3, 29, 8, 'Success', '2024-10-29 10:15:00'),
-(38, 1, 33, 11, 'Success', '2025-03-25 14:50:00'),
-(39, 2, 37, 14, 'Success', '2023-06-06 08:55:00'),
-(40, 3, 2, 6, 'Success', '2022-11-15 16:20:00'),
-(41, 1, 4, 9, 'Success', '2023-07-09 13:10:00'),
-(42, 2, 13, 7, 'Success', '2024-04-14 12:20:00'),
-(43, 3, 17, 15, 'Success', '2025-01-21 09:35:00'),
-(44, 1, 23, 10, 'Success', '2023-03-28 08:25:00'),
-(45, 2, 31, 12, 'Success', '2024-09-17 17:15:00'),
-(46, 3, 39, 8, 'Success', '2025-05-02 06:50:00'),
-(47, 1, 1, 5, 'Success', '2022-07-12 11:30:00'),
-(48, 2, 19, 9, 'Success', '2023-10-22 14:55:00'),
-(49, 3, 24, 6, 'Success', '2024-12-01 10:40:00'),
-(50, 1, 38, 11, 'Success', '2025-04-05 07:05:00');
+import React, { useEffect, useState } from "react";
+import { Bar, Line, Pie } from "react-chartjs-2";
+import { Chart, registerables } from "chart.js";
+import { Container, Row, Col, Card, CardBody, CardTitle, Label, Input } from "reactstrap";
+
+Chart.register(...registerables);
+
+const VendorFulfillmentOverview = () => {
+  const [fulfillments, setFulfillments] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getAllFulfillments(); // Fetch data
+        setFulfillments(response || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setFulfillments([]);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Filter successful vendor fulfillments
+  const vendorFulfillments = fulfillments.filter(
+    (f) => f.fulfillmentStaus === "Success"
+  );
+
+  // Top 10 Fulfilled Items
+  const itemCounts = vendorFulfillments.reduce((acc, { rewardCatalogItemName, fulfillmentQuantity }) => {
+    acc[rewardCatalogItemName] = (acc[rewardCatalogItemName] || 0) + fulfillmentQuantity;
+    return acc;
+  }, {});
+
+  const topItems = Object.entries(itemCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  // Fulfillments Over the Year
+  const monthlyCounts = vendorFulfillments.reduce((acc, { fulfilmentCreationDate }) => {
+    const date = new Date(fulfilmentCreationDate);
+    if (date.getFullYear() === selectedYear) {
+      const month = date.toLocaleString("default", { month: "short" });
+      acc[month] = (acc[month] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Top 10 Customers with Unique Colors
+  const customerCounts = vendorFulfillments.reduce((acc, { customerName, fulfillmentQuantity }) => {
+    acc[customerName] = (acc[customerName] || 0) + fulfillmentQuantity;
+    return acc;
+  }, {});
+
+  const topCustomers = Object.entries(customerCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const customerColors = [
+    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#C9CBCF", "#8C564B", "#E377C2", "#7F7F7F"
+  ];
+
+  // Fulfillments Per Vendor Over Time
+  const vendorTimeCounts = vendorFulfillments.reduce((acc, { rewardCatalogItemName, fulfilmentCreationDate }) => {
+    const date = new Date(fulfilmentCreationDate);
+    if (date.getFullYear() === selectedYear) {
+      const month = date.toLocaleString("default", { month: "short" });
+      if (!acc[rewardCatalogItemName]) acc[rewardCatalogItemName] = {};
+      acc[rewardCatalogItemName][month] = (acc[rewardCatalogItemName][month] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  return (
+    <Container fluid>
+      <h2 className="text-center my-4">Vendor Fulfillment Overview</h2>
+
+      {/* Year Selector */}
+      <Row className="justify-content-center mb-4">
+        <Col md={4}>
+          <Label>Select Year:</Label>
+          <Input type="select" onChange={(e) => setSelectedYear(Number(e.target.value))} value={selectedYear}>
+            {[2023, 2024, 2025].map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </Input>
+        </Col>
+      </Row>
+
+      {/* Charts Section */}
+      <Row>
+        {/* Top Fulfilled Items */}
+        <Col md={6}>
+          <Card className="shadow">
+            <CardBody>
+              <CardTitle className="text-center">Top 10 Fulfilled Items</CardTitle>
+              <Bar
+                data={{
+                  labels: topItems.map((item) => item[0]),
+                  datasets: [{
+                    label: "Fulfilled Quantity",
+                    data: topItems.map((item) => item[1]),
+                    backgroundColor: "blue",
+                  }]
+                }}
+                options={{ responsive: true }}
+              />
+            </CardBody>
+          </Card>
+        </Col>
+
+        {/* Fulfillments Over the Year */}
+        <Col md={6}>
+          <Card className="shadow">
+            <CardBody>
+              <CardTitle className="text-center">Fulfillments Over the Year</CardTitle>
+              <Line
+                data={{
+                  labels: Object.keys(monthlyCounts),
+                  datasets: [{
+                    label: "Fulfillments per Month",
+                    data: Object.values(monthlyCounts),
+                    borderColor: "green",
+                    fill: false
+                  }]
+                }}
+                options={{ responsive: true }}
+              />
+            </CardBody>
+          </Card>
+        </Col>
+
+        {/* Top Customers */}
+        <Col md={6} className="mt-4">
+          <Card className="shadow">
+            <CardBody>
+              <CardTitle className="text-center">Top 10 Customers</CardTitle>
+              <Pie
+                data={{
+                  labels: topCustomers.map((cust) => cust[0]),
+                  datasets: [{
+                    label: "Total Fulfillments",
+                    data: topCustomers.map((cust) => cust[1]),
+                    backgroundColor: customerColors.slice(0, topCustomers.length)
+                  }]
+                }}
+                options={{ responsive: true }}
+              />
+            </CardBody>
+          </Card>
+        </Col>
+
+        {/* Fulfillments Per Vendor Over Time */}
+        <Col md={6} className="mt-4">
+          <Card className="shadow">
+            <CardBody>
+              <CardTitle className="text-center">Fulfillments Per Vendor</CardTitle>
+              <Line
+                data={{
+                  labels: Object.keys(monthlyCounts),
+                  datasets: Object.entries(vendorTimeCounts).map(([vendor, values], index) => ({
+                    label: vendor,
+                    data: Object.keys(monthlyCounts).map((month) => values[month] || 0),
+                    borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                    fill: false
+                  }))
+                }}
+                options={{ responsive: true }}
+              />
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default VendorFulfillmentOverview;
