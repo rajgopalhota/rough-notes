@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react"; import { Bar, Line, Pie } fr
 
 Chart.register(...registerables);
 
-const VendorFulfillmentOverview = ({ data }) => { const [topItems, setTopItems] = useState({}); const [fulfillmentsOverTime, setFulfillmentsOverTime] = useState({}); const [topCustomers, setTopCustomers] = useState({}); const [fulfillmentsPerVendor, setFulfillmentsPerVendor] = useState({});
+const VendorFulfillmentOverview = () => { const [data, setData] = useState([]); const [topItems, setTopItems] = useState({}); const [fulfillmentsOverTime, setFulfillmentsOverTime] = useState({}); const [topCustomers, setTopCustomers] = useState({}); const [fulfillmentsPerVendor, setFulfillmentsPerVendor] = useState({});
+
+useEffect(() => { const fetchData = async () => { try { const response = await getAllFulfillments(); console.log(response); setData(response || []); } catch (error) { console.error("Error fetching data:", error); setData([]); } }; fetchData(); }, []);
 
 useEffect(() => { if (!data || data.length === 0) return;
 
 const filteredData = data.filter(item => item.fulfillmentStaus === "Success");
 
-// Top 10 Fulfilled Items
 const itemsMap = {};
 filteredData.forEach(({ rewardCatalogItemName, fulfillmentQuantity }) => {
   itemsMap[rewardCatalogItemName] = (itemsMap[rewardCatalogItemName] || 0) + fulfillmentQuantity;
@@ -21,7 +22,6 @@ setTopItems({
   datasets: [{ label: "Fulfilled Quantity", data: topItemsData.map(item => item[1]), backgroundColor: "blue" }]
 });
 
-// Fulfillments Over Time (by Month)
 const monthlyMap = {};
 filteredData.forEach(({ fulfilmentCreationDate }) => {
   const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
@@ -32,7 +32,6 @@ setFulfillmentsOverTime({
   datasets: [{ label: "Fulfillments per Month", data: Object.values(monthlyMap), borderColor: "green", fill: false }]
 });
 
-// Top 10 Customers
 const customerMap = {};
 filteredData.forEach(({ customerName, fulfillmentQuantity }) => {
   customerMap[customerName] = (customerMap[customerName] || 0) + fulfillmentQuantity;
@@ -45,7 +44,6 @@ setTopCustomers({
   datasets: [{ label: "Total Fulfillments", data: topCustomersData.map(item => item[1]), backgroundColor: "red" }]
 });
 
-// Fulfillments Per Vendor Over Time
 const vendorMap = {};
 filteredData.forEach(({ rewardCatalogItemName, fulfilmentCreationDate }) => {
   const month = new Date(fulfilmentCreationDate).toLocaleString("default", { month: "short" });
@@ -63,6 +61,8 @@ setFulfillmentsPerVendor({
 });
 
 }, [data]);
+
+if (!data || data.length === 0) { return <p>Loading or no data available...</p>; }
 
 return ( <div> <h2>Vendor Fulfillment Overview</h2> <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}> <div style={{ width: "45%" }}><Bar data={topItems} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsOverTime} /></div> <div style={{ width: "45%" }}><Pie data={topCustomers} /></div> <div style={{ width: "45%" }}><Line data={fulfillmentsPerVendor} /></div> </div> </div> ); };
 
