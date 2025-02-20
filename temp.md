@@ -1,10 +1,21 @@
-INSERT INTO fulfillment (id, customer_id, reward_catalog_item_id, qty, status, creation_date)
-SELECT 
-    (SELECT MAX(id) FROM fulfillment) + ROW_NUMBER() OVER(),
-    FLOOR(RAND() * 3) + 1, 
-    FLOOR(RAND() * 40) + 1, 
-    FLOOR(RAND() * 20) + 1, 
-    'Success', 
-    DATE_ADD('2022-01-01', INTERVAL FLOOR(RAND() * 1100) DAY)
-FROM information_schema.tables
-LIMIT 90;
+INSERT INTO fulfillment (id, customer_id, reward_catalog_item_id, qty, status, creation_date) VALUES
+(11, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2025-02-10 18:47:52'),
+(12, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-08-15 14:30:25'),
+(13, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-05-12 10:15:40'),
+(14, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2025-01-05 09:45:10'),
+(15, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-06-21 16:55:30'),
+(16, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2022-11-11 12:05:55'),
+(17, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-03-07 20:10:10'),
+(18, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-09-30 22:50:20'),
+(19, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-07-18 13:20:30'),
+(20, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2022-12-05 17:40:50'),
+(21, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-01-25 08:15:00'),
+(22, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-04-09 19:30:15'),
+(23, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2022-07-28 11:05:25'),
+(24, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2025-02-17 15:45:40'),
+(25, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-10-03 18:20:55'),
+(26, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-06-15 09:10:30'),
+(27, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2022-09-22 14:50:45'),
+(28, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2025-01-12 21:05:50'),
+(29, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2024-08-27 12:30:20'),
+(30, FLOOR(RAND() * 3) + 1, FLOOR(RAND() * 40) + 1, FLOOR(RAND() * 20) + 1, 'Success', '2023-02-14 17:15:35');
