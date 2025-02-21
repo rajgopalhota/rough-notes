@@ -9,32 +9,47 @@ export default function DateInput() {
     setRawValue(cleaned);
   };
 
+  // Format the display string with slashes.
+  // Before any digit is entered, we display nothing.
+  // Once the first digit is entered, we show day as two characters, month as two, year as four,
+  // filling missing characters with spaces.
   const formatDisplay = (value) => {
-    // Split into day, month, year parts with placeholders
+    if (!value) return "";
     const digits = value.split("");
-    const day = (digits[0] || "_") + (digits[1] || "_");
-    const month = (digits[2] || "_") + (digits[3] || "_");
-    const year = (digits[4] || "_") + (digits[5] || "_") + (digits[6] || "_") + (digits[7] || "_");
+    const day =
+      (digits[0] ? digits[0] : " ") +
+      (digits[1] ? digits[1] : " ");
+    const month =
+      (digits[2] ? digits[2] : " ") +
+      (digits[3] ? digits[3] : " ");
+    const year =
+      (digits[4] ? digits[4] : " ") +
+      (digits[5] ? digits[5] : " ") +
+      (digits[6] ? digits[6] : " ") +
+      (digits[7] ? digits[7] : " ");
     return `${day}/${month}/${year}`;
   };
 
   return (
     <div className="date-input-container">
-      {/* The underlying input holds only raw digits */}
+      {/* Underlying input that holds raw digits */}
       <input
         className="date-input"
         type="text"
         value={rawValue}
         onChange={handleChange}
       />
-      {/* The overlay displays the formatted string */}
-      <div className="date-overlay">{formatDisplay(rawValue)}</div>
+      {/* Overlay is only visible when at least one digit is entered */}
+      {rawValue && (
+        <div className="date-overlay">{formatDisplay(rawValue)}</div>
+      )}
       <style>{`
         .date-input-container {
           position: relative;
           display: inline-block;
         }
-        /* Underlying input: transparent text, caret still visible */
+        /* The actual input: text is transparent so the overlay is visible,
+           but the caret is still shown. */
         .date-input {
           position: relative;
           background: transparent;
@@ -47,13 +62,13 @@ export default function DateInput() {
           font-family: monospace;
           letter-spacing: 0.3em;
         }
-        /* Overlay: positioned over the input */
+        /* Overlay: placed exactly over the input */
         .date-overlay {
           position: absolute;
           top: 0;
           left: 0;
-          height: 100%;
           width: 100%;
+          height: 100%;
           pointer-events: none;
           border: 1px solid transparent;
           padding: 8px;
@@ -62,6 +77,9 @@ export default function DateInput() {
           text-align: center;
           line-height: 1.5;
           color: #333;
+          background: transparent;
+          /* Ensure that selecting text only selects the actual input text */
+          user-select: none;
         }
       `}</style>
     </div>
