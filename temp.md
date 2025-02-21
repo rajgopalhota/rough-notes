@@ -3,81 +3,88 @@ import React, { useState } from "react";
 export default function DateInput() {
   const [rawValue, setRawValue] = useState("");
 
-  // Create a formatted string (DD/MM/YYYY) based on the digits entered
-  const formatDisplay = (value) => {
-    const digits = value.split("");
-    const day = (digits[0] || " ") + (digits[1] || " ");
-    const month = (digits[2] || " ") + (digits[3] || " ");
-    const year =
-      (digits[4] || " ") +
-      (digits[5] || " ") +
-      (digits[6] || " ") +
-      (digits[7] || " ");
-    return `${day}/${month}/${year}`;
+  // Helper to return padded segment for day, month, year segments
+  const getSegment = (value, length) => {
+    const padded = (value + "").padEnd(length, " ");
+    return padded;
   };
 
   const handleChange = (e) => {
-    // Allow only digits, limit to 8 characters (DDMMYYYY)
+    // Only allow digits, limit to 8 characters (DDMMYYYY)
     const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
     setRawValue(cleaned);
   };
 
-  // The ghost formatted string is only shown when the user has started typing.
-  const ghostText = rawValue ? formatDisplay(rawValue) : "";
+  // Split the raw value into segments: day (2), month (2), year (4)
+  const dayDigits = rawValue.slice(0, 2);
+  const monthDigits = rawValue.slice(2, 4);
+  const yearDigits = rawValue.slice(4, 8);
 
-  // Wrapper style uses a CSS variable for the ghost text.
-  const wrapperStyle = {
-    position: "relative",
-    display: "inline-block",
-  };
+  const formattedDay = getSegment(dayDigits, 2);
+  const formattedMonth = getSegment(monthDigits, 2);
+  const formattedYear = getSegment(yearDigits, 4);
+
+  // Create a ghost string using flex layout to separate segments
+  const ghostContent = (
+    <>
+      <span className="segment">{formattedDay}</span>
+      <span className="slash">/</span>
+      <span className="segment">{formattedMonth}</span>
+      <span className="slash">/</span>
+      <span className="segment">{formattedYear}</span>
+    </>
+  );
 
   return (
-    <div style={wrapperStyle} className="date-input-wrapper">
-      {/* The actual input holds raw digits */}
+    <div className="date-input-wrapper">
       <input
         type="text"
         value={rawValue}
         onChange={handleChange}
         placeholder="DDMMYYYY"
-        style={{
-          border: "1px solid #ccc",
-          padding: "8px",
-          paddingLeft: "8px",
-          borderRadius: "4px",
-          width: "150px",
-          fontFamily: "monospace",
-          letterSpacing: "0.3em",
-          position: "relative",
-          backgroundColor: "transparent",
-          zIndex: 2,
-          color: "#000",
-        }}
+        className="date-input"
       />
-      {/* A background overlay for ghost text */}
-      {ghostText && (
-        <div className="ghost-overlay" aria-hidden="true">
-          {ghostText}
-        </div>
-      )}
+      {rawValue && <div className="ghost-overlay">{ghostContent}</div>}
       <style>{`
         .date-input-wrapper {
-          /* Ensure the overlay is positioned correctly */
           position: relative;
+          display: inline-block;
           font-family: monospace;
         }
+        /* The actual input: text is transparent, caret remains visible */
+        .date-input {
+          position: relative;
+          background: transparent;
+          color: transparent;
+          caret-color: black;
+          border: 1px solid #ccc;
+          padding: 8px;
+          border-radius: 4px;
+          width: 180px;
+          letter-spacing: 0.1em;
+          font-size: 16px;
+        }
+        /* The overlay displays the formatted text */
         .ghost-overlay {
           position: absolute;
           top: 0;
-          left: 8px; /* Match input padding */
-          width: calc(100% - 16px);
+          left: 8px; /* match input padding */
           height: 100%;
+          width: calc(100% - 16px);
+          pointer-events: none;
           display: flex;
           align-items: center;
-          pointer-events: none;
-          color: #ccc;
-          letter-spacing: 0.3em;
-          z-index: 1;
-          /* Use a lighter color so that actual input text stands out */
+          font-size: 16px;
+          letter-spacing: 0.1em;
+          color: #aaa;
+          background: transparent;
+        }
+        .ghost-overlay .segment {
+          min-width: 20px;
+          text-align: center;
+        }
+        .ghost-overlay .slash {
+          margin: 0 4px;
         }
       `}</style>
     </div>
