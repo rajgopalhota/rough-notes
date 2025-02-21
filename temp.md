@@ -1,92 +1,82 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
-export default function DateInput() {
-  const [rawValue, setRawValue] = useState("");
+export default function DateField({ defaultValue = "" }) {
+  const inputRef = useRef(null);
+  // We'll store the raw digits (only numbers) in state.
+  const [digits, setDigits] = useState(() => {
+    // If a default value is provided in the form DD/MM/YYYY, remove the slashes.
+    return defaultValue.replace(/[^0-9]/g, "");
+  });
 
-  // Helper to return padded segment for day, month, year segments
-  const getSegment = (value, length) => {
-    const padded = (value + "").padEnd(length, " ");
-    return padded;
+  // Format the digits to a DD / MM / YYYY string.
+  const formatDigits = (raw) => {
+    let day = raw.slice(0, 2);
+    let month = raw.slice(2, 4);
+    let year = raw.slice(4, 8);
+    let result = day;
+    if (day.length === 2) {
+      // Append slash with spacing when day is complete.
+      result += " / ";
+    }
+    result += month;
+    if (month.length === 2) {
+      result += " / ";
+    }
+    result += year;
+    return result;
   };
 
   const handleChange = (e) => {
-    // Only allow digits, limit to 8 characters (DDMMYYYY)
+    // Remove any non-digit characters and limit to 8 digits.
     const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
-    setRawValue(cleaned);
+    setDigits(cleaned);
   };
 
-  // Split the raw value into segments: day (2), month (2), year (4)
-  const dayDigits = rawValue.slice(0, 2);
-  const monthDigits = rawValue.slice(2, 4);
-  const yearDigits = rawValue.slice(4, 8);
-
-  const formattedDay = getSegment(dayDigits, 2);
-  const formattedMonth = getSegment(monthDigits, 2);
-  const formattedYear = getSegment(yearDigits, 4);
-
-  // Create a ghost string using flex layout to separate segments
-  const ghostContent = (
-    <>
-      <span className="segment">{formattedDay}</span>
-      <span className="slash">/</span>
-      <span className="segment">{formattedMonth}</span>
-      <span className="slash">/</span>
-      <span className="segment">{formattedYear}</span>
-    </>
-  );
+  // When the digits change, we want to update the caret position.
+  // We compute the caret position based on the number of digits and inserted slashes.
+  useEffect(() => {
+    if (inputRef.current) {
+      let pos = digits.length;
+      // If the day is complete, we have inserted " / " (3 extra characters) after the day.
+      if (digits.length > 1) {
+        pos += 3; // after day if day is complete
+      }
+      // If the month is complete, add additional spacing for month slash.
+      if (digits.length > 3) {
+        pos += 3; // after month if month is complete
+      }
+      // Set caret position
+      inputRef.current.setSelectionRange(pos, pos);
+    }
+  }, [digits]);
 
   return (
-    <div className="date-input-wrapper">
+    <div style={styles.container}>
       <input
+        ref={inputRef}
         type="text"
-        value={rawValue}
+        value={formatDigits(digits)}
         onChange={handleChange}
-        placeholder="DDMMYYYY"
-        className="date-input"
+        placeholder="DD / MM / YYYY"
+        style={styles.input}
       />
-      {rawValue && <div className="ghost-overlay">{ghostContent}</div>}
-      <style>{`
-        .date-input-wrapper {
-          position: relative;
-          display: inline-block;
-          font-family: monospace;
-        }
-        /* The actual input: text is transparent, caret remains visible */
-        .date-input {
-          position: relative;
-          background: transparent;
-          color: transparent;
-          caret-color: black;
-          border: 1px solid #ccc;
-          padding: 8px;
-          border-radius: 4px;
-          width: 180px;
-          letter-spacing: 0.1em;
-          font-size: 16px;
-        }
-        /* The overlay displays the formatted text */
-        .ghost-overlay {
-          position: absolute;
-          top: 0;
-          left: 8px; /* match input padding */
-          height: 100%;
-          width: calc(100% - 16px);
-          pointer-events: none;
-          display: flex;
-          align-items: center;
-          font-size: 16px;
-          letter-spacing: 0.1em;
-          color: #aaa;
-          background: transparent;
-        }
-        .ghost-overlay .segment {
-          min-width: 20px;
-          text-align: center;
-        }
-        .ghost-overlay .slash {
-          margin: 0 4px;
-        }
-      `}</style>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "inline-block",
+    position: "relative",
+  },
+  input: {
+    border: "1px solid #ccc",
+    padding: "8px",
+    borderRadius: "4px",
+    width: "200px",
+    fontFamily: "monospace",
+    fontSize: "16px",
+    // You can adjust letterSpacing if you need more gap around the slashes:
+    letterSpacing: "0.1em",
+  },
+};
