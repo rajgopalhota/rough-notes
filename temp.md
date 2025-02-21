@@ -1,82 +1,91 @@
 import React, { useState, useRef, useEffect } from "react";
 
-export default function DateField({ defaultValue = "" }) {
+export default function DateField() {
+  // state stores only digits (max 8 for DDMMYYYY)
+  const [digits, setDigits] = useState("");
   const inputRef = useRef(null);
-  // We'll store the raw digits (only numbers) in state.
-  const [digits, setDigits] = useState(() => {
-    // If a default value is provided in the form DD/MM/YYYY, remove the slashes.
-    return defaultValue.replace(/[^0-9]/g, "");
-  });
 
-  // Format the digits to a DD / MM / YYYY string.
-  const formatDigits = (raw) => {
-    let day = raw.slice(0, 2);
-    let month = raw.slice(2, 4);
-    let year = raw.slice(4, 8);
-    let result = day;
-    if (day.length === 2) {
-      // Append slash with spacing when day is complete.
-      result += " / ";
+  // Full template string (we want to show static slashes and placeholders)
+  const template = "DD/MM/YYYY";
+
+  // Build the display string by replacing each character from template with the entered digit.
+  // For positions where a digit exists, use it; otherwise, keep the character from the template.
+  const displayValue = () => {
+    // Remove any non-digit from the state (should already be digits only)
+    const entered = digits.split("");
+    let result = "";
+    let digitIndex = 0;
+    for (let i = 0; i < template.length; i++) {
+      // Only replace positions that are digits in the template (i.e. D or M or Y)
+      if (template[i] === "D" || template[i] === "M" || template[i] === "Y") {
+        if (entered[digitIndex] !== undefined) {
+          result += entered[digitIndex];
+          digitIndex++;
+        } else {
+          // if no digit entered yet, leave the placeholder character from template (or blank it out if preferred)
+          result += template[i];
+        }
+      } else {
+        // Static characters (slashes)
+        result += template[i];
+      }
     }
-    result += month;
-    if (month.length === 2) {
-      result += " / ";
-    }
-    result += year;
     return result;
   };
 
+  // Handle changes from user input.
   const handleChange = (e) => {
-    // Remove any non-digit characters and limit to 8 digits.
-    const cleaned = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
-    setDigits(cleaned);
+    // Remove any non-digit characters
+    const cleaned = e.target.value.replace(/[^0-9]/g, "");
+    // Limit to 8 digits (DDMMYYYY)
+    setDigits(cleaned.slice(0, 8));
   };
 
-  // When the digits change, we want to update the caret position.
-  // We compute the caret position based on the number of digits and inserted slashes.
+  // Optionally, adjust caret position so that it doesn't get stuck in a separator.
   useEffect(() => {
     if (inputRef.current) {
-      let pos = digits.length;
-      // If the day is complete, we have inserted " / " (3 extra characters) after the day.
-      if (digits.length > 1) {
-        pos += 3; // after day if day is complete
+      // Place caret right after the last entered digit, or at the start if none.
+      // Note: since the display includes fixed characters, we need to calculate the position.
+      let pos = 0;
+      let digitCount = 0;
+      // Walk the template until we've passed as many digit positions as in our state.
+      for (let i = 0; i < template.length && digitCount < digits.length; i++) {
+        if (template[i] === "D" || template[i] === "M" || template[i] === "Y") {
+          digitCount++;
+          pos = i + 1;
+        } else {
+          pos = i + 1;
+        }
       }
-      // If the month is complete, add additional spacing for month slash.
-      if (digits.length > 3) {
-        pos += 3; // after month if month is complete
-      }
-      // Set caret position
       inputRef.current.setSelectionRange(pos, pos);
     }
   }, [digits]);
+
+  const styles = {
+    container: {
+      display: "inline-block",
+      position: "relative",
+      fontFamily: "monospace"
+    },
+    input: {
+      border: "1px solid #ccc",
+      padding: "8px",
+      borderRadius: "4px",
+      width: "150px",
+      fontSize: "16px",
+      letterSpacing: "0.1em"
+    }
+  };
 
   return (
     <div style={styles.container}>
       <input
         ref={inputRef}
         type="text"
-        value={formatDigits(digits)}
+        value={displayValue()}
         onChange={handleChange}
-        placeholder="DD / MM / YYYY"
         style={styles.input}
       />
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "inline-block",
-    position: "relative",
-  },
-  input: {
-    border: "1px solid #ccc",
-    padding: "8px",
-    borderRadius: "4px",
-    width: "200px",
-    fontFamily: "monospace",
-    fontSize: "16px",
-    // You can adjust letterSpacing if you need more gap around the slashes:
-    letterSpacing: "0.1em",
-  },
-};
