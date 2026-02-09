@@ -1,1 +1,19 @@
 q = filter q by date('Timestamp_c_Year', 'Timestamp_c_Month', 'Timestamp_c_Day') in {{ row(static_1.selection, [0]).asDateRange("date('Timestamp_c_Year', 'Timestamp_c_Month', 'Timestamp_c_Day')") }};
+
+
+// Source - https://stackoverflow.com/a/77288246
+// Posted by Nan0fire
+// Retrieved 2026-02-09, License - CC BY-SA 4.0
+
+  public static <T extends SpecificRecord> String toJson(T avroObject) {
+        DatumWriter<T> writer = new SpecificDatumWriter<>(avroObject.getSchema());
+        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            Encoder jsonEncoder = EncoderFactory.get().jsonEncoder(avroObject.getSchema(), stream);
+            writer.write(avroObject, jsonEncoder);
+            jsonEncoder.flush();
+            return stream.toString();
+        } catch (IOException e) {
+            log.errorf("Serialization error:", e.getMessage());
+        }
+        return null;
+    }
