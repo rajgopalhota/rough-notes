@@ -1,19 +1,44 @@
-q = filter q by date('Timestamp_c_Year', 'Timestamp_c_Month', 'Timestamp_c_Day') in {{ row(static_1.selection, [0]).asDateRange("date('Timestamp_c_Year', 'Timestamp_c_Month', 'Timestamp_c_Day')") }};
+<template for:each={resultData.questions} for:item="q" for:index="index">
+    <div key={q.id} class="slds-m-bottom_medium">
 
+        <!-- Label -->
+        <label 
+            class="slds-form-element__label bold-label" 
+            for={q.id}
+            id={q.id + '-label'}
+        >
+            {q.text}
+            <span style="color: red;">*</span>
+        </label>
 
-// Source - https://stackoverflow.com/a/77288246
-// Posted by Nan0fire
-// Retrieved 2026-02-09, License - CC BY-SA 4.0
+        <!-- Input -->
+        <lightning-input 
+            id={q.id}
+            name={q.id}
+            type={q.type}
+            date-style="short"
+            required
+            maxlength={q.maxlength}
+            onchange={handleValidations}
+            variant="label-hidden"
+            class={q.dob}
+        >
+        </lightning-input>
 
-  public static <T extends SpecificRecord> String toJson(T avroObject) {
-        DatumWriter<T> writer = new SpecificDatumWriter<>(avroObject.getSchema());
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            Encoder jsonEncoder = EncoderFactory.get().jsonEncoder(avroObject.getSchema(), stream);
-            writer.write(avroObject, jsonEncoder);
-            jsonEncoder.flush();
-            return stream.toString();
-        } catch (IOException e) {
-            log.errorf("Serialization error:", e.getMessage());
-        }
-        return null;
-    }
+        <!-- Checkbox List -->
+        <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
+            <div key={eachCheckBox.id} class={eachCheckBox.className}>
+                
+                <lightning-input 
+                    type="checkbox"
+                    label={eachCheckBox.label}
+                    class={eachCheckBox.inputClassName}
+                    onchange={handleCheckBoxOnChange}
+                >
+                </lightning-input>
+
+            </div>
+        </template>
+
+    </div>
+</template>
