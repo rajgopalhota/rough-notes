@@ -1,44 +1,193 @@
-<template for:each={resultData.questions} for:item="q" for:index="index">
-    <div key={q.id} class="slds-m-bottom_medium">
+<template>
 
-        <!-- Label -->
-        <label 
-            class="slds-form-element__label bold-label" 
-            for={q.id}
-            id={q.id + '-label'}
+    <!-- MODAL -->
+    <template if:true={isModalOpen}>
+        <section 
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
+            class="slds-modal slds-fade-in-open"
         >
-            {q.text}
-            <span style="color: red;">*</span>
-        </label>
+            <div class="slds-modal__container">
 
-        <!-- Input -->
-        <lightning-input 
-            id={q.id}
-            name={q.id}
-            type={q.type}
-            date-style="short"
-            required
-            maxlength={q.maxlength}
-            onchange={handleValidations}
-            variant="label-hidden"
-            class={q.dob}
-        >
-        </lightning-input>
-
-        <!-- Checkbox List -->
-        <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
-            <div key={eachCheckBox.id} class={eachCheckBox.className}>
-                
-                <lightning-input 
-                    type="checkbox"
-                    label={eachCheckBox.label}
-                    class={eachCheckBox.inputClassName}
-                    onchange={handleCheckBoxOnChange}
+                <!-- CLOSE BUTTON -->
+                <button 
+                    class="slds-button slds-button_icon slds-modal__close"
+                    onclick={closeModal}
+                    title="Close"
                 >
-                </lightning-input>
+                    ✕
+                </button>
+
+                <!-- BODY -->
+                <div class="slds-modal__content slds-p-around_medium">
+
+                    <!-- QUESTIONS -->
+                    <template if:true={resultData.questions}>
+                        <template for:each={resultData.questions} for:item="q" for:index="index">
+                            
+                            <div key={q.id} class="slds-form-element slds-m-bottom_medium">
+
+                                <!-- LABEL -->
+                                <label 
+                                    class="slds-form-element__label"
+                                    for={q.id}
+                                >
+                                    {q.text}
+                                    <span class="slds-required">*</span>
+                                </label>
+
+                                <!-- INPUT -->
+                                <div class="slds-form-element__control">
+                                    <lightning-input 
+                                        id={q.id}
+                                        name={q.id}
+                                        type={q.type}
+                                        variant="label-hidden"
+                                        required
+                                        maxlength={q.maxlength}
+                                        onchange={handleValidations}
+                                        class={q.dob}
+                                        data-first={index === 0}
+                                    >
+                                    </lightning-input>
+                                </div>
+
+                                <!-- CHECKBOX LIST -->
+                                <template if:true={q.autoFillCheckboxList}>
+                                    <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
+                                        <div key={eachCheckBox.id} class={eachCheckBox.className}>
+                                            
+                                            <lightning-input 
+                                                type="checkbox"
+                                                label={eachCheckBox.label}
+                                                class={eachCheckBox.inputClassName}
+                                                onchange={handleCheckBoxOnChange}
+                                            >
+                                            </lightning-input>
+
+                                        </div>
+                                    </template>
+                                </template>
+
+                            </div>
+
+                        </template>
+                    </template>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="slds-modal__footer">
+
+                    <lightning-combobox
+                        label="Call Dropped Reason"
+                        value={value}
+                        options={options}
+                        placeholder="Select Reason"
+                        onchange={handleCallDropdownChange}
+                        variant="label-hidden"
+                        class="callDropReasonCombobox"
+                    >
+                    </lightning-combobox>
+
+                    <template if:true={showBypassBtn}>
+                        <lightning-button 
+                            variant="brand"
+                            label="ByPass"
+                            onclick={handleBypassButton}
+                            disabled={bypassButtonDisabled}
+                        >
+                        </lightning-button>
+                    </template>
+
+                    <lightning-button 
+                        variant="brand"
+                        label="Verify"
+                        onclick={handleSubmit}
+                        disabled={checkValidity}
+                    >
+                    </lightning-button>
+
+                </div>
 
             </div>
-        </template>
+        </section>
 
-    </div>
+        <!-- BACKDROP -->
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+
+    <!-- AGENT LANDING BUTTON -->
+    <template if:true={agentLandingButton}>
+        <lightning-button 
+            variant="brand"
+            label={btnAgentLandingText}
+            onclick={handleReloadButton}
+        >
+        </lightning-button>
+    </template>
+
+
+    <!-- WORKFLOW MODAL -->
+    <template if:true={showWorkflow}>
+        <section 
+            role="dialog"
+            aria-modal="true"
+            class="slds-modal slds-fade-in-open"
+        >
+            <div class="slds-modal__container">
+
+                <button 
+                    class="slds-button slds-button_icon slds-modal__close"
+                    onclick={closeWorkflowNav}
+                    title="Close"
+                >
+                    ✕
+                </button>
+
+                <div class="slds-modal__content slds-p-around_medium">
+                    <c-care_unidentifyworkflow
+                        account-info={accountInfo}
+                        unidentifyinfo={unidentifyinfo}
+                        ucontactid={ucontactid}
+                        idnvobj={idnvobj}
+                        onclosemodalworkflow={closeModalWorkflow}
+                    >
+                    </c-care_unidentifyworkflow>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+
+    <!-- STEP UP -->
+    <template if:true={isStepUpApi}>
+        <c-care_step-up-container 
+            onstepupvalidatesuccess={handleActivityResponse}
+            ondecision={handleDecision}
+        >
+        </c-care_step-up-container>
+    </template>
+
 </template>
+
+
+renderedCallback() {
+    if (this.isModalOpen && !this.hasFocused) {
+        const firstInput = this.template.querySelector('[data-first="true"]');
+        if (firstInput) {
+            firstInput.focus();
+            this.hasFocused = true;
+        }
+    }
+}
+
+closeModal() {
+    this.isModalOpen = false;
+    this.hasFocused = false;
+}
